@@ -1,0 +1,54 @@
+- hosts: master
+  become: true
+  gather_facts: no
+
+  vars:
+    sosreport_case: 02090101
+
+  tasks:
+    - name: Collect sosreport
+      import_role:
+        name: sosreport
+    - name: Get "oc" data
+      command: "oc get node,hostsubnet -o wide"
+      register: node_and_subnet
+    - name: Debug
+      debug:
+        msg: "{{ node_and_subnet.stdout }}"
+    - name: Copy content into file
+      delegate_to: localhost
+      copy:
+        content: "{{ node_and_subnet }}"
+        dest: "/root/results.txt"
+    - name: Get "nodes" data
+      command: "oc describe nodes"
+      register: nodes_description
+    - name: Copy node description into file
+      delegate_to: localhost
+      blockinfile:
+        path: "/root/results.txt"
+        block: "{{ nodes_description }}"
+    - name: Get "events" data
+      command: "oc get all,events  -o wide -n default"
+      register: events
+    - name: Copy events into file
+      delegate_to: localhost
+      blockinfile:
+        path: "/root/results.txt"
+        block: "{{ events }}"
+    - name: Get "metrics" data
+      command: "oc get --raw /metrics --server https://`hostname`   --config=/etc/origin/master/admin.kubeconfig"
+      register: metrics   
+    - name: Copy metrics into file
+      delegate_to: localhost
+      blockinfile:
+        path: "/root/results.txt"
+        block: "{{ metrics }}"
+    - name: Get more "metrics" data
+      command: "oc get --raw /metrics --server https://`hostname`:8444   --config=/etc/origin/master/admin.kubeconfig"
+      register: more_metrics
+    - name: Copy more metrics into file
+      delegate_to: localhost
+      blockinfile:
+        path: "/root/results.txt"
+        block: "{{ more_metrics }}"
