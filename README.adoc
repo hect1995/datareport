@@ -1,0 +1,39 @@
+= Get Information from OCP3 Project
+Héctor Esteban Cabezos <hesteban@redhat.com>
+v1.0, 2021-06
+// Create TOC wherever needed
+:toc: macro
+:sectanchors:
+:sectnumlevels: 2
+:sectnums: 
+:source-highlighter: pygments
+:imagesdir: images
+// Start: Enable admonition icons
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+ifndef::env-github[]
+:icons: font
+endif::[]
+// End: Enable admonition icons
+
+// Create the Table of contents here
+toc::[]
+
+== Introduction
+This simple Ansible project is expected to retrieve information from an OCP3 cluster, so that it can be send for support issues. +
+It creates a `sosreport` for the **master** and the rest of the nodes, with the specific support case ID.
+Morever, the status of multiple elements in the cluster is checked by executing the `oc` command.
+
+
+Before running the project, it is required to adapt the `inventory` file to the concrete OCP architecture. Then, run: 
+
+[source,bash]
+----
+ansible-playbook -i inventory playbooks/sos-report.yaml
+----
+
