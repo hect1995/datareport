@@ -1,6 +1,6 @@
 - hosts: master
   become: true
-  gather_facts: no
+  gather_facts: yes
 
   vars:
     sosreport_case: 02090101
@@ -37,7 +37,7 @@
         path: "/root/results.txt"
         block: "{{ events }}"
     - name: Get "metrics" data
-      command: "oc get --raw /metrics --server https://`hostname`   --config=/etc/origin/master/admin.kubeconfig"
+      command: "oc get --raw /metrics --server https://{{ansible_fqdn}}  --config=/etc/origin/master/admin.kubeconfig"
       register: metrics   
     - name: Copy metrics into file
       delegate_to: localhost
@@ -45,10 +45,21 @@
         path: "/root/results.txt"
         block: "{{ metrics }}"
     - name: Get more "metrics" data
-      command: "oc get --raw /metrics --server https://`hostname`:8444   --config=/etc/origin/master/admin.kubeconfig"
+      command: "oc get --raw /metrics --server https://{{ansible_fqdn}}:8444 --config=/etc/origin/master/admin.kubeconfig"
       register: more_metrics
     - name: Copy more metrics into file
       delegate_to: localhost
       blockinfile:
         path: "/root/results.txt"
         block: "{{ more_metrics }}"
+- hosts: nodes
+  become: true
+  gather_facts: yes
+
+  vars:
+    sosreport_case: 02090101
+
+  tasks:
+    - name: Collect sosreport
+      import_role:
+        name: sosreport

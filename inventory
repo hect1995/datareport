@@ -1,2 +1,6 @@
 [master]
 ocp3mst1.ocp3.rhbcnconsulting.com
+
+[nodes]
+ocp3wk1.ocp3.rhbcnconsulting.com
+ocp3wk2.ocp3.rhbcnconsulting.com
