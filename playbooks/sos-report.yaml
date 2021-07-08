@@ -19,39 +19,41 @@
       delegate_to: localhost
       copy:
         content: "{{ node_and_subnet }}"
-        dest: "/root/results.txt"
+        dest: "/root/{{ sosreport_case }}_node-hostsubnet.txt"
     - name: Get "nodes" data
       command: "oc describe nodes"
       register: nodes_description
-    - name: Copy node description into file
+    - name: Copy node description into a new file
       delegate_to: localhost
-      blockinfile:
-        path: "/root/results.txt"
-        block: "{{ nodes_description }}"
+      copy:
+        content: "{{ nodes_description }}"
+        dest: "/root/{{ sosreport_case }}_describe-nodes.txt"
     - name: Get "events" data
       command: "oc get all,events  -o wide -n default"
-      register: events
+      register: events_and_all
     - name: Copy events into file
       delegate_to: localhost
-      blockinfile:
-        path: "/root/results.txt"
-        block: "{{ events }}"
+      copy:
+        content: "{{ events_and_all }}"
+        dest: "/root/{{ sosreport_case }}_events-and-all.txt"
     - name: Get "metrics" data
       command: "oc get --raw /metrics --server https://{{ansible_fqdn}}  --config=/etc/origin/master/admin.kubeconfig"
-      register: metrics   
+      register: metrics_master   
     - name: Copy metrics into file
       delegate_to: localhost
-      blockinfile:
-        path: "/root/results.txt"
-        block: "{{ metrics }}"
+      copy:
+        content: "{{ metrics_master }}"
+        dest: "/root/{{ sosreport_case }}_metrics-master.txt"
     - name: Get more "metrics" data
       command: "oc get --raw /metrics --server https://{{ansible_fqdn}}:8444 --config=/etc/origin/master/admin.kubeconfig"
       register: more_metrics
     - name: Copy more metrics into file
       delegate_to: localhost
-      blockinfile:
-        path: "/root/results.txt"
-        block: "{{ more_metrics }}"
+      copy:
+        content: "{{ more_metrics }}"
+        dest: "/root/{{ sosreport_case }}_more-metrics-master.txt"
+
+
 - hosts: nodes
   become: true
   gather_facts: yes
