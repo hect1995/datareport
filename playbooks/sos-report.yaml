@@ -2,8 +2,8 @@
   become: true
   gather_facts: yes
 
-  vars:
-    sosreport_case: 02090101
+  vars_files:
+    - ../vars/all.yaml
 
   tasks:
     - name: Collect sosreport
@@ -57,9 +57,8 @@
 - hosts: nodes
   become: true
   gather_facts: yes
-
-  vars:
-    sosreport_case: 02090101
+  vars_files:
+    - ../vars/all.yaml
 
   tasks:
     - name: Collect sosreport
