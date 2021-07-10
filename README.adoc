@@ -42,7 +42,7 @@ Before running the project, it is required to adapt the `inventory` file to the 
 
 [source,bash]
 ----
-ansible-playbook -i inventory playbooks/sos-report.yaml
+ansible-playbook -i inventory playbooks/main.yaml 
 ----
 
 Two different `.gz` files result from running this command, one for all the `sosreports` and another one for the `oc` metrics.
