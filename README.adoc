@@ -38,7 +38,9 @@ It creates a `sosreport` for the **master** and the rest of the nodes, with the 
 Morever, the status of multiple elements in the cluster is checked by executing the `oc` command.
 
 
-Before running the project, it is required to adapt the `inventory` file to the concrete OCP architecture. Then, run: 
+Before running the project, it is required to adapt the `inventory` file to the concrete OCP architecture. 
+Moreover, the user needs to specify the case ID by changing the variable `sosreport_case` from `vars/all.yaml`. +
+Then, run: 
 
 [source,bash]
 ----
