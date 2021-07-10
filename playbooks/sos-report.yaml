@@ -1,4 +1,24 @@
-- hosts: master
+- hosts: localhost
+  become: true
+  gather_facts: yes
+  vars_files:
+    - ../vars/all.yaml
+  tasks:
+    - name: Find all files containing sosreport
+      find:
+        paths: "~/"
+        patterns: "sosreport"
+      register: sosreportfiles
+
+    - name: Remove local sosreport folder
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ sosreportfiles }}"
+
+
+- hosts: sosreport_machines
   become: true
   gather_facts: yes
 
@@ -9,58 +29,21 @@
     - name: Collect sosreport
       import_role:
         name: sosreport
-    - name: Get "oc" data
-      command: "oc get node,hostsubnet -o wide"
-      register: node_and_subnet
-    - name: Debug
-      debug:
-        msg: "{{ node_and_subnet.stdout }}"
-    - name: Copy content into file
-      delegate_to: localhost
-      copy:
-        content: "{{ node_and_subnet }}"
-        dest: "/root/{{ sosreport_case }}_node-hostsubnet.txt"
-    - name: Get "nodes" data
-      command: "oc describe nodes"
-      register: nodes_description
-    - name: Copy node description into a new file
-      delegate_to: localhost
-      copy:
-        content: "{{ nodes_description }}"
-        dest: "/root/{{ sosreport_case }}_describe-nodes.txt"
-    - name: Get "events" data
-      command: "oc get all,events  -o wide -n default"
-      register: events_and_all
-    - name: Copy events into file
-      delegate_to: localhost
-      copy:
-        content: "{{ events_and_all }}"
-        dest: "/root/{{ sosreport_case }}_events-and-all.txt"
-    - name: Get "metrics" data
-      command: "oc get --raw /metrics --server https://{{ansible_fqdn}}  --config=/etc/origin/master/admin.kubeconfig"
-      register: metrics_master   
-    - name: Copy metrics into file
-      delegate_to: localhost
-      copy:
-        content: "{{ metrics_master }}"
-        dest: "/root/{{ sosreport_case }}_metrics-master.txt"
-    - name: Get more "metrics" data
-      command: "oc get --raw /metrics --server https://{{ansible_fqdn}}:8444 --config=/etc/origin/master/admin.kubeconfig"
-      register: more_metrics
-    - name: Copy more metrics into file
-      delegate_to: localhost
-      copy:
-        content: "{{ more_metrics }}"
-        dest: "/root/{{ sosreport_case }}_more-metrics-master.txt"
 
-
-- hosts: nodes
+- hosts: localhost
   become: true
   gather_facts: yes
+
   vars_files:
     - ../vars/all.yaml
 
   tasks:
-    - name: Collect sosreport
-      import_role:
-        name: sosreport
+    - name: Make a tar from the sosreport folder
+      community.general.archive:
+        path: "{{ sosreport_local_dir }}"
+        dest: "~/{{ sosreport_case }}_{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-sosreport.gz"
+        format: gz
+        force_archive: true
+        remove: yes
+        
+

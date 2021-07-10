@@ -1,3 +1,5 @@
 ---
 sosreport_case: 02090101
+sosreport_local_dir: ~/sosreport
+oc_local_dir: ~/ocreport
 

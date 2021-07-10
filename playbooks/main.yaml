@@ -1,0 +1,6 @@
+- name: Include the sos-report generation playbook
+  import_playbook: sos-report.yaml
+
+- name: Include the oc-report generation playbook
+  import_playbook: oc-report.yaml
+

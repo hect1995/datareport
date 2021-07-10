@@ -1,0 +1,80 @@
+- hosts: localhost
+  become: true
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/all.yaml
+
+  tasks:
+    - name: Creates ocreport directory
+      file:
+        path: "{{ oc_local_dir }}"
+        state: directory
+
+
+- hosts: master
+  become: true
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/all.yaml
+
+  tasks:
+    - name: Get "oc" data
+      command: "oc get node,hostsubnet -o wide"
+      register: node_and_subnet
+    - name: Copy content into file
+      delegate_to: localhost
+      copy:
+        content: "{{ node_and_subnet }}"
+        dest: "{{ oc_local_dir }}/{{ sosreport_case }}_node-hostsubnet.txt"
+    - name: Get "nodes" data
+      command: "oc describe nodes"
+      register: nodes_description
+    - name: Copy node description into a new file
+      delegate_to: localhost
+      copy:
+        content: "{{ nodes_description }}"
+        dest: "{{ oc_local_dir }}/{{ sosreport_case }}_describe-nodes.txt"
+    - name: Get "events" data
+      command: "oc get all,events  -o wide -n default"
+      register: events_and_all
+    - name: Copy events into file
+      delegate_to: localhost
+      copy:
+        content: "{{ events_and_all }}"
+        dest: "{{ oc_local_dir }}/{{ sosreport_case }}_events-and-all.txt"
+    - name: Get "metrics" data
+      command: "oc get --raw /metrics --server https://{{ansible_fqdn}}  --config=/etc/origin/master/admin.kubeconfig"
+      register: metrics_master
+    - name: Copy metrics into file
+      delegate_to: localhost
+      copy:
+        content: "{{ metrics_master }}"
+        dest: "{{ oc_local_dir }}/{{ sosreport_case }}_metrics-master.txt"
+    - name: Get more "metrics" data
+      command: "oc get --raw /metrics --server https://{{ ansible_fqdn }}:8444 --config=/etc/origin/master/admin.kubeconfig"
+      register: more_metrics
+    - name: Copy more metrics into file
+      delegate_to: localhost
+      copy:
+        content: "{{ more_metrics }}"
+        dest: "{{ oc_local_dir }}/{{ sosreport_case }}_more-metrics-master.txt"
+
+- hosts: localhost
+  become: true
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/all.yaml
+
+  tasks:
+    - name: Make a tar from the oc-report folder
+      community.general.archive:
+        path: "{{ oc_local_dir }}"
+        dest: "~/{{ sosreport_case }}_{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-ocreport.gz"
+        format: gz
+        force_archive: true
+        remove: yes
+    
+

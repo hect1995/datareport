@@ -24,6 +24,14 @@ endif::[]
 // Create the Table of contents here
 toc::[]
 
+== Prerequirements
+A specific role to compress folders need to be installed in the bastion machine by doing:
+
+[source,bash]
+----
+ansible-galaxy collection install community.general
+----
+
 == Introduction
 This simple Ansible project is expected to retrieve information from an OCP3 cluster, so that it can be send for support issues. +
 It creates a `sosreport` for the **master** and the rest of the nodes, with the specific support case ID.
@@ -37,3 +45,6 @@ Before running the project, it is required to adapt the `inventory` file to the 
 ansible-playbook -i inventory playbooks/sos-report.yaml
 ----
 
+Two different `.gz` files result from running this command, one for all the `sosreports` and another one for the `oc` metrics.
+These files are located in `~/` from the bastion, where the playbook is launched. +
+Finally, one needs to gather these two files and `put` it into a case making use of `sftp`.
